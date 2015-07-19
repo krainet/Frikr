@@ -6,36 +6,38 @@ from django.shortcuts import render
 from photos.forms import PhotoForm
 from photos.models import Photo, PUBLIC
 from django.contrib.auth.decorators import login_required
+from django.views.generic import View
 
 # Create your views here.
+class HomeView(View):
 
-def home(req):
-    # photos = Photo.objects.all().order_by('-created_at')
-    photos = Photo.objects.filter(visibility=PUBLIC).order_by('-created_at')
-    context = {
-        # 'photo_list': photos[:5]
-        'photo_list': photos
-    }
-    return render(req, 'photos/home.html', context)
-
-def detail(req,id):
-    """
-    Carga página de detalle de foto
-    :param req: HttpRequest
-    :param id: id de la foto
-    :return: HttpResponse
-    """
-    # inner join select_related / prefetch_related
-    posible_photo = Photo.objects.filter(id=id).select_related('owner')
-    photo = posible_photo[0] if len(posible_photo) == 1 else None
-    if photo is not None:
-        # load detail
+    def get(self, req):
+        photos = Photo.objects.filter(visibility=PUBLIC).order_by('-created_at')
         context = {
-            'photo': photo
+            # 'photo_list': photos[:5]
+            'photo_list': photos
         }
-        return render(req, 'photos/detail.html', context)
-    else:
-        return HttpResponseNotFound('Detail not found')  # 404 not found
+        return render(req, 'photos/home.html', context)
+
+class PhotoDetailView(View):
+    def get(self,req,id):
+        """
+        Carga página de detalle de foto
+        :param req: HttpRequest
+        :param id: id de la foto
+        :return: HttpResponse
+        """
+        # inner join select_related / prefetch_related
+        posible_photo = Photo.objects.filter(id=id).select_related('owner')
+        photo = posible_photo[0] if len(posible_photo) == 1 else None
+        if photo is not None:
+            # load detail
+            context = {
+                'photo': photo
+            }
+            return render(req, 'photos/detail.html', context)
+        else:
+            return HttpResponseNotFound('Detail not found')  # 404 not found
 
 @login_required()
 def create(req):

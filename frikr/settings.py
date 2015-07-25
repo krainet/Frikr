@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Django settings for frikr project.
 
@@ -130,3 +131,11 @@ LOGIN_URL = '/login'
 
 # FUENTE PALABROTAS : http://goo.gl/G2nCu7 (ojo al unicode)
 BADWORDS = [u'Abrazafarolas', u'Analfabestia', u'Cabron', u'PUTA']
+
+
+# PAGINACION REST-FRAMEWORK
+REST_FRAMEWORK = {
+    'PAGINATE_BY': 5,  # 5 ITEMS PER PAGE
+    'PAGINATE_BY_PARAM': 'page_size',  # parametro get de paginación
+    'MAX_PAGINATE_BY': 10  # maximo num elementos por pagina que permito
+}

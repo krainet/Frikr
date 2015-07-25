@@ -1,15 +1,20 @@
 # -*- coding: utf-8 -*-
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 __author__ = 'hadock'
 from django.contrib.auth.models import User
-from rest_framework.views import APIView
+# from rest_framework.views import APIView
 from users.serializers import UserSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.generics import GenericAPIView
 
+class UserListAPI(GenericAPIView):
 
-class UserListAPI(APIView):
-    def get(self,req):
+    # pagination_class = PageNumberPagination
+    # serializer_class = UserSerializer
+
+    def get(self, req):
         users = User.objects.all()
         serializer = UserSerializer(users, many=True)
         serialized_users = serializer.data # en data van los datos...
@@ -23,7 +28,7 @@ class UserListAPI(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class UserDetailAPI(APIView):
+class UserDetailAPI(GenericAPIView):
 
     def get(self, req, pk):
         user = get_object_or_404(User, pk=pk)

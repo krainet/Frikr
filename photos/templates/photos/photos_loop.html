@@ -1,5 +1,5 @@
 {% for photo in photo_list %}
     <a href="{% url 'photos_detail' photo.id %}">
-        <img src="{{photo.url}}" alt="{{photo.name}}" height="150">
+        <img class="img-rounded" style="margin-top: 5px;" src="{{photo.url}}" alt="{{photo.name}}" height="150">
     </a>
 {% endfor %}

@@ -4,7 +4,7 @@
 
 {% block section %}
     <h1>{{photo.name}}</h1>
-    <img src="{{photo.url}}" alt="{{photo.name}}" width="500">
+    <img class="img-rounded" style="margin-left:5px;" src="{{photo.url}}" alt="{{photo.name}}" width="500">
     <p>{{photo.description}}</p>
     <p>
         <strong>Autor:</strong> {{photo.owner.first_name}} {{photo.owner.last_name}}

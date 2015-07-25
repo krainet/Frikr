@@ -5,11 +5,7 @@
     <p>Firkr es como  F pero en Friki</p>
     {% if photo_list|length > 0 %}
         <h2>Últimas fotos publicadas.</h2>
-        {% for photo in photo_list %}
-            <a href="{% url 'photos_detail' photo.id %}">
-                <img src="{{photo.url}}" alt="{{photo.name}}" height="150">
-            </a>
-        {% endfor %}
+        {% include 'photos/photos_loop.html' %}
     {% else %}
         <h2>No hay fotos ahora mismo</h2>
     {% endif %}

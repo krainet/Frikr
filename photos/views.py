@@ -6,7 +6,22 @@ from django.shortcuts import render
 from photos.forms import PhotoForm
 from photos.models import Photo, PUBLIC
 from django.contrib.auth.decorators import login_required
-from django.views.generic import View
+from django.views.generic import View, ListView
+from django.utils.decorators import method_decorator
+from django.db.models import Q
+
+
+class PhotosQuerySet(object):
+
+    def get_photos_queryset(self, req):
+        if not req.user.is_authenticated():
+            photos = Photo.objects.filter(visibility=PUBLIC).order_by('-created_at')
+        elif req.user.is_superuser: # es super admin
+            photos = Photo.objects.all()
+        else:
+            photos = Photo.objects.filter(Q(owner=req.user) | Q(visibility=PUBLIC))
+
+        return photos
 
 # Create your views here.
 class HomeView(View):
@@ -19,8 +34,8 @@ class HomeView(View):
         }
         return render(req, 'photos/home.html', context)
 
-class PhotoDetailView(View):
-    def get(self,req,id):
+class PhotoDetailView(View, PhotosQuerySet):
+    def get(self, req, id):
         """
         Carga página de detalle de foto
         :param req: HttpRequest
@@ -28,8 +43,8 @@ class PhotoDetailView(View):
         :return: HttpResponse
         """
         # inner join select_related / prefetch_related
-        posible_photo = Photo.objects.filter(id=id).select_related('owner')
-        photo = posible_photo[0] if len(posible_photo) == 1 else None
+        posible_photos = self.get_photos_queryset(req).filter(id=id).select_related('owner')
+        photo = posible_photos[0] if len(posible_photos) == 1 else None
         if photo is not None:
             # load detail
             context = {
@@ -39,16 +54,32 @@ class PhotoDetailView(View):
         else:
             return HttpResponseNotFound('Detail not found')  # 404 not found
 
-@login_required()
-def create(req):
-    """
-    Muestra un form para crear una foto y la crea si la peticion es POST
-    :param req: HttpRequest
-    :return: HttpResponse
-    """
-    error_messages = []
-    success_message = ''
-    if req.method == 'POST':
+class PhotoCreateView(View):
+    @method_decorator(login_required())
+    def get(self, req):
+        """
+        Muestra un form para crear una foto y la crea si la peticion es POST
+        :param req: HttpRequest
+        :return: HttpResponse
+        """
+        error_messages = []
+        form = PhotoForm()
+
+        context = {
+            'form': form
+        }
+        return render(req, 'photos/new_photo.html', context)
+
+    @method_decorator(login_required())
+    def post(self, req):
+        """
+        Muestra un form para crear una foto y la crea si la peticion es POST
+        :param req: HttpRequest
+        :return: HttpResponse
+        """
+        error_messages = []
+        success_message = ''
+
         # Creamos owner y se lo pasamos al form con un objeto pre-establecido
         photo_with_owner = Photo()
         photo_with_owner.owner = req.user
@@ -62,11 +93,38 @@ def create(req):
             success_message += '(ver foto)</a>'
         else:
             error_messages.append('Formulario incompleto.')
-    else:
-        form = PhotoForm()
 
-    context = {
-        'form': form,
-        'success_message': success_message
-    }
-    return render(req, 'photos/new_photo.html', context)
+        context = {
+            'form': form,
+            'success_message': success_message
+        }
+        return render(req, 'photos/new_photo.html', context)
+
+class PhotoListView(View, PhotosQuerySet):
+    def get(self, req):
+        """
+        Dev fotos publicas a guest
+        Dev fotos usuario auth
+        Dev fotos usuario pub y pub de otro
+        Superadmin = todo
+        :param req:
+        :return:
+        """
+
+        context = {
+            'photos': self.get_photos_queryset(req)
+        }
+
+        return render(req, 'photos/photos_list.html', context)
+
+
+class UserPhotosView(ListView):
+    """
+    Usando ListView para ahorrar curro  
+    """
+    model = Photo
+    template_name = 'photos/user_photos.html'
+
+    def get_queryset(self):
+        queryset = super(UserPhotosView, self).get_queryset()
+        return queryset.filter(owner=self.request.user)

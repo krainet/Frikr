@@ -1,6 +1,7 @@
 
 from django.conf.urls import include, url
 from django.contrib import admin
+from django.contrib.auth.decorators import login_required
 from photos.views import HomeView, PhotoDetailView, PhotoCreateView, PhotoListView, UserPhotosView
 from users.views import LoginView, LogoutView
 
@@ -13,7 +14,7 @@ urlpatterns = [
     url(r'^$', HomeView.as_view(), name='photos_home'),
     url(r'detail/(?P<id>[0-9]+)$', PhotoDetailView.as_view(), name='photos_detail'),
     url(r'^photos/$', PhotoListView.as_view(), name='photo_list'),
-    url(r'^my-photos/$', UserPhotosView.as_view(), name='user_photos'),
+    url(r'^my-photos/$', login_required(UserPhotosView.as_view()), name='user_photos'), #protegemos con decorator de login
     url(r'^photos/new$', PhotoCreateView.as_view(), name='photo_create'),
 
     # url(r'^.*$', 'photos.views.home'), wildcard

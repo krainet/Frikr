@@ -120,7 +120,7 @@ class PhotoListView(View, PhotosQuerySet):
 
 class UserPhotosView(ListView):
     """
-    Usando ListView para ahorrar curro  
+    Usando ListView para ahorrar curro
     """
     model = Photo
     template_name = 'photos/user_photos.html'

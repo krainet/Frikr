@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from users.permissions import UserPermission
+
 __author__ = 'hadock'
 from django.contrib.auth.models import User
 # from rest_framework.views import APIView
@@ -11,8 +13,8 @@ from rest_framework.generics import GenericAPIView
 
 class UserListAPI(GenericAPIView):
 
-    # pagination_class = PageNumberPagination
     # serializer_class = UserSerializer
+    permission_classes = (UserPermission,)
 
     def get(self, req):
         users = User.objects.all()
@@ -28,14 +30,23 @@ class UserListAPI(GenericAPIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def get_serializer_class(self):
+        return UserSerializer
+
 class UserDetailAPI(GenericAPIView):
+
+    permission_classes = (UserPermission,)
 
     def get(self, req, pk):
         user = get_object_or_404(User, pk=pk)
+        # aqui y siempre que declaremos los metodos nosotros , nos toca comprobar a mano
+        # si el usuario tiene permiso
+        self.check_object_permissions(req, user)  # checar permisos
         return Response(UserSerializer(user).data)
 
     def put(self, req, pk):
         user = get_object_or_404(User, pk=pk)
+        self.check_object_permissions(req, user)  # permisos a mano
         serializer = UserSerializer(instance=user, data=req.data)
         if serializer.is_valid():
             serializer.save()
@@ -45,5 +56,6 @@ class UserDetailAPI(GenericAPIView):
 
     def delete(self, req, pk):
         user = get_object_or_404(User, pk=pk)
+        self.check_object_permissions(req, user)  # permisos a manija
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

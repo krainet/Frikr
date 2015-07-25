@@ -1,23 +1,10 @@
 # -*- coding: utf-8 -*-
-from rest_framework.response import Response
+from photos.serializers import PhotoSerializer
 __author__ = 'hadock'
 from photos.models import Photo
-from rest_framework.views import APIView
-from photos.serializers import PhotoSerializer
-from django.shortcuts import get_object_or_404
-from rest_framework import status
+from rest_framework.generics import ListCreateAPIView
 
 
-class PhotoListAPI(APIView):
-    def get(self, req):
-        photos = Photo.objects.all()
-        serializer = PhotoSerializer(photos, many=True)
-        return Response(serializer.data)
-
-
-class PhotoDetailAPI(APIView):
-
-    def get(self, req, pk):
-        photo = get_object_or_404(Photo, pk=pk)
-        return Response(PhotoSerializer(photo).data)
-
+class PhotoListAPI(ListCreateAPIView):
+    queryset = Photo.objects.all()
+    serializer_class = PhotoSerializer

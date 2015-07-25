@@ -28,3 +28,17 @@ class UserDetailAPI(APIView):
     def get(self, req, pk):
         user = get_object_or_404(User, pk=pk)
         return Response(UserSerializer(user).data)
+
+    def put(self, req, pk):
+        user = get_object_or_404(User, pk=pk)
+        serializer = UserSerializer(instance=user, data=req.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, req, pk):
+        user = get_object_or_404(User, pk=pk)
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

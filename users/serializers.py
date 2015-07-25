@@ -46,7 +46,12 @@ class UserSerializer(serializers.Serializer):
         :return:
         """
         users = User.objects.filter(username=data)
-        if len(users) != 0:
-            raise serializers.ValidationError("Ya existe un usuario con este username")
+        # caso CREATE (no hay instancia)  comprobar si hay usuario con ese username
+        if not self.instance and len(users) != 0:
+            raise serializers.ValidationError(u'Ya existe un usuario con este username')
+        # Si estoy actualizando, el nuevo username es diferente al de la instancia (está cambiando el username)
+        # y existen usuarios ya registrados con el nuevo username
+        elif self.instance.username != data and len(users) != 0:
+            raise serializers.ValidationError(u'Ya existe un usuario con este username')
         else:
             return data

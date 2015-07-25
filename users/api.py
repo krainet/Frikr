@@ -4,7 +4,7 @@ __author__ = 'hadock'
 from django.contrib.auth.models import User
 from rest_framework.views import APIView
 from users.serializers import UserSerializer
-
+from django.shortcuts import get_object_or_404
 
 
 class UserListAPI(APIView):
@@ -13,3 +13,8 @@ class UserListAPI(APIView):
         serializer = UserSerializer(users, many=True)
         serialized_users = serializer.data # en data van los datos...
         return Response(serialized_users)
+
+class UserDetailAPI(APIView):
+    def get(self, req, pk):
+        user = get_object_or_404(User, pk=pk)
+        return Response(UserSerializer(user).data)
